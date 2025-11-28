@@ -12,6 +12,7 @@ import vendorRoutes from './routes/vendorRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 import { requestContext } from './middlewares/requestContext.js';
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/v1/vendors', vendorRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/carts', cartRoutes);
 app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
 
 // Test route to demonstrate error handling
 app.get('/error', (_req: Request, _res: Response, next: NextFunction) => {
