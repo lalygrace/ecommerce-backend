@@ -22,7 +22,9 @@ export type CreateCouponDtoType = z.infer<typeof CreateCouponDto>;
 export const UpdateCouponDto = CreateCouponDto.partial().strict();
 export type UpdateCouponDtoType = z.infer<typeof UpdateCouponDto>;
 
-export const ListCouponsQuery = paginationSchema.extend({ active: z.boolean().optional() });
+export const ListCouponsQuery = paginationSchema.extend({
+  active: z.boolean().optional(),
+});
 export type ListCouponsQueryType = z.infer<typeof ListCouponsQuery>;
 
 export const ApplyCouponDto = z

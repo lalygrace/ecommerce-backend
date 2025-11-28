@@ -15,8 +15,18 @@ export const listCoupons: RequestHandler = async (req, res, next) => {
   try {
     const query = (req as any).validatedQuery ?? (req.query as any);
     const { page = 1, limit = 20, active } = query;
-    const result = await couponService.listCoupons({ page: Number(page), limit: Number(limit), active });
-    return res.status(200).json({ status: 'success', data: result.items, meta: { total: result.total } });
+    const result = await couponService.listCoupons({
+      page: Number(page),
+      limit: Number(limit),
+      active,
+    });
+    return res
+      .status(200)
+      .json({
+        status: 'success',
+        data: result.items,
+        meta: { total: result.total },
+      });
   } catch (err) {
     return next(err);
   }
