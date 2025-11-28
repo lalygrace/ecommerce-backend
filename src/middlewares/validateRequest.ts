@@ -18,11 +18,23 @@ export const validateRequest = (
     try {
       const valueToValidate = (req as any)[target];
       const parsed = schema.parse(valueToValidate);
-      // replace the target with the parsed value for downstream handlers
-      (req as any)[target] = parsed;
+      // For `query` Express may expose a read-only getter; attach parsed
+      // values to a namespaced property to avoid assignment errors.
+      if (target === 'query') {
+        (req as any).validatedQuery = parsed;
+      } else {
+        (req as any)[target] = parsed;
+      }
       return next();
     } catch (err: unknown) {
-      return next(new AppError('Invalid request payload', 400, true));
+      // In development include Zod details to aid debugging
+      const devMessage =
+        process.env.NODE_ENV !== 'production' &&
+        err &&
+        typeof (err as any).message === 'string'
+          ? `Invalid request payload: ${(err as any).message}`
+          : 'Invalid request payload';
+      return next(new AppError(devMessage, 400, true));
     }
   };
 };

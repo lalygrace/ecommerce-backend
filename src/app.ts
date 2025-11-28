@@ -6,6 +6,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
 import userRoutes from './routes/userRoutes.js';
 import meRoutes from './routes/meRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 import { requestContext } from './middlewares/requestContext.js';
 
 const app = express();
@@ -35,6 +36,7 @@ app.get('/health', (_req: Request, res: Response) => {
 // API routes
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1', meRoutes);
+app.use('/api/v1/products', productRoutes);
 
 // Test route to demonstrate error handling
 app.get('/error', (_req: Request, _res: Response, next: NextFunction) => {
