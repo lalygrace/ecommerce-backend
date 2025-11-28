@@ -26,6 +26,7 @@
     "@prisma/client": "^4.15.0",
     "@types/debug": "^4.1.12",
     "bcrypt": "^6.0.0",
+    "better-auth": "^1.4.3",
     "mongoose": "^8.18.0",
     "pino": "^8.12.0",
     "zod": "^4.1.5"

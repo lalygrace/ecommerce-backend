@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -86,8 +87,14 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  emailVerified Boolean   @default(false)
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
+
   @@index([role])
   @@index([email])
+  @@map("user")
 }
 
 model SellerProfile {
@@ -107,18 +114,18 @@ model SellerProfile {
 }
 
 model Vendor {
-  id          String        @id @default(uuid()) @db.Uuid
-  sellerId    String        @unique @db.Uuid
-  seller      SellerProfile @relation(fields: [sellerId], references: [id])
+  id          String             @id @default(uuid()) @db.Uuid
+  sellerId    String             @unique @db.Uuid
+  seller      SellerProfile      @relation(fields: [sellerId], references: [id])
   name        String
-  slug        String        @unique
+  slug        String             @unique
   description String?
   logoUrl     String?
   products    Product[]
   settlements VendorSettlement[]
   payouts     VendorPayout[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@index([slug])
 }
@@ -127,7 +134,7 @@ model Category {
   id        String     @id @default(uuid()) @db.Uuid
   name      String
   slug      String     @unique
-  parentId  String? @db.Uuid
+  parentId  String?    @db.Uuid
   parent    Category?  @relation("CategoryParent", fields: [parentId], references: [id])
   children  Category[] @relation("CategoryParent")
   createdAt DateTime   @default(now())
@@ -138,11 +145,11 @@ model Category {
 }
 
 model Product {
-  id                 String        @id @default(uuid()) @db.Uuid
-  vendorId           String @db.Uuid
-  vendor             Vendor        @relation(fields: [vendorId], references: [id])
+  id                 String           @id @default(uuid()) @db.Uuid
+  vendorId           String           @db.Uuid
+  vendor             Vendor           @relation(fields: [vendorId], references: [id])
   title              String
-  slug               String        @unique
+  slug               String           @unique
   description        String?
   priceCents         Int
   originalPriceCents Int?
@@ -150,15 +157,15 @@ model Product {
   shippingFeeCents   Int?
   deliveryTime       String?
   rating             Float?
-  reviewCount        Int           @default(0)
+  reviewCount        Int              @default(0)
   image              String?
   images             String[]
-  categorySlugs      String[]      // use slugs from Category for simplicity
-  status             ProductStatus @default(ACTIVE)
+  categorySlugs      String[] // use slugs from Category for simplicity
+  status             ProductStatus    @default(ACTIVE)
   variants           ProductVariant[]
   reviews            Review[]
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@index([vendorId])
   @@index([status])
@@ -167,33 +174,33 @@ model Product {
 
 model ProductVariant {
   id                 String   @id @default(uuid()) @db.Uuid
-  productId          String @db.Uuid
+  productId          String   @db.Uuid
   product            Product  @relation(fields: [productId], references: [id])
   sku                String   @unique
   size               String?
   color              String?
   priceOverrideCents Int?
-  stock              Int       @default(0)
+  stock              Int      @default(0)
   image              String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@index([productId])
   @@index([sku])
 }
 
 model Review {
-  id        String   @id @default(uuid()) @db.Uuid
-  productId String @db.Uuid
-  product   Product  @relation(fields: [productId], references: [id])
-  userId    String @db.Uuid
-  user      User     @relation(fields: [userId], references: [id])
-  rating    Int
-  title     String?
-  body      String?
-  helpfulCount Int   @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid()) @db.Uuid
+  productId    String   @db.Uuid
+  product      Product  @relation(fields: [productId], references: [id])
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id])
+  rating       Int
+  title        String?
+  body         String?
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([productId])
   @@index([userId])
@@ -201,11 +208,11 @@ model Review {
 }
 
 model OrderItem {
-  id             String @id @default(uuid()) @db.Uuid
-  orderId        String @db.Uuid
-  order          Order  @relation(fields: [orderId], references: [id])
-  productId      String @db.Uuid
-  vendorId       String @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  orderId        String  @db.Uuid
+  order          Order   @relation(fields: [orderId], references: [id])
+  productId      String  @db.Uuid
+  vendorId       String  @db.Uuid
   title          String
   unitPriceCents Int
   quantity       Int
@@ -214,20 +221,20 @@ model OrderItem {
 }
 
 model Order {
-  id             String       @id @default(uuid()) @db.Uuid
-  customerId     String @db.Uuid
-  customer       User         @relation("OrdersByCustomer", fields: [customerId], references: [id])
-  items          OrderItem[]
-  totalCents     Int
-  status         OrderStatus  @default(PENDING)
-  payment        Payment?
-  shippingAddress Json?        // snapshot of address at time of order
-  couponCode     String?
+  id                 String      @id @default(uuid()) @db.Uuid
+  customerId         String      @db.Uuid
+  customer           User        @relation("OrdersByCustomer", fields: [customerId], references: [id])
+  items              OrderItem[]
+  totalCents         Int
+  status             OrderStatus @default(PENDING)
+  payment            Payment?
+  shippingAddress    Json? // snapshot of address at time of order
+  couponCode         String?
   discountTotalCents Int?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
-  settlements    VendorSettlement[]
+  settlements VendorSettlement[]
 
   @@index([customerId])
   @@index([status])
@@ -253,10 +260,10 @@ model Payment {
 }
 
 model CartItem {
-  id             String @id @default(uuid()) @db.Uuid
-  cartId         String @db.Uuid
-  cart           Cart   @relation(fields: [cartId], references: [id])
-  productId      String @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  cartId         String  @db.Uuid
+  cart           Cart    @relation(fields: [cartId], references: [id])
+  productId      String  @db.Uuid
   title          String
   unitPriceCents Int
   quantity       Int
@@ -265,32 +272,32 @@ model CartItem {
 }
 
 model Cart {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String @db.Uuid
-  user      User      @relation(fields: [userId], references: [id])
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String     @db.Uuid
+  user      User       @relation(fields: [userId], references: [id])
   sessionId String?
   items     CartItem[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@unique([userId])
   @@index([sessionId])
 }
 
 model Coupon {
-  id          String   @id @default(uuid()) @db.Uuid
-  code        String   @unique
-  type        CouponType
-  valueCents  Int
-  maxUses     Int?
-  usedCount   Int      @default(0)
-  validFrom   DateTime?
-  validTo     DateTime?
-  active      Boolean  @default(true)
-  minOrderAmountCents Int?
+  id                      String     @id @default(uuid()) @db.Uuid
+  code                    String     @unique
+  type                    CouponType
+  valueCents              Int
+  maxUses                 Int?
+  usedCount               Int        @default(0)
+  validFrom               DateTime?
+  validTo                 DateTime?
+  active                  Boolean    @default(true)
+  minOrderAmountCents     Int?
   applicableCategorySlugs String[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
 
   @@index([active])
   @@index([validFrom, validTo])
@@ -298,7 +305,7 @@ model Coupon {
 
 model Address {
   id         String   @id @default(uuid()) @db.Uuid
-  userId     String @db.Uuid
+  userId     String   @db.Uuid
   user       User     @relation(fields: [userId], references: [id])
   label      String?
   name       String?
@@ -318,29 +325,29 @@ model Address {
 }
 
 model Notification {
-  id        String     @id @default(uuid()) @db.Uuid
-  userId    String @db.Uuid
-  user      User       @relation(fields: [userId], references: [id])
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id])
   type      String
   message   String
   readAt    DateTime?
   ip        String?
   userAgent String?
   category  String?
-  createdAt DateTime   @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([readAt])
 }
 
 model InventoryEvent {
-  id          String   @id @default(uuid()) @db.Uuid
-  productId   String @db.Uuid
-  variantSku  String?
-  type        String   // ADJUST, SALE, RETURN, RESERVE, RELEASE
-  quantity    Int
-  note        String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid()) @db.Uuid
+  productId  String   @db.Uuid
+  variantSku String?
+  type       String // ADJUST, SALE, RETURN, RESERVE, RELEASE
+  quantity   Int
+  note       String?
+  createdAt  DateTime @default(now())
 
   @@index([productId])
   @@index([variantSku])
@@ -348,15 +355,15 @@ model InventoryEvent {
 }
 
 model Reservation {
-  id          String            @id @default(uuid()) @db.Uuid
-  productId   String @db.Uuid
-  variantSku  String?
-  userId      String? @db.Uuid
-  sessionId   String?
-  quantity    Int
-  status      ReservationStatus @default(ACTIVE)
-  expiresAt   DateTime
-  createdAt   DateTime          @default(now())
+  id         String            @id @default(uuid()) @db.Uuid
+  productId  String            @db.Uuid
+  variantSku String?
+  userId     String?           @db.Uuid
+  sessionId  String?
+  quantity   Int
+  status     ReservationStatus @default(ACTIVE)
+  expiresAt  DateTime
+  createdAt  DateTime          @default(now())
 
   @@index([productId])
   @@index([expiresAt])
@@ -365,18 +372,18 @@ model Reservation {
 }
 
 model VendorSettlement {
-  id             String          @id @default(uuid()) @db.Uuid
-  orderId        String @db.Uuid
-  order          Order           @relation(fields: [orderId], references: [id])
-  vendorId       String @db.Uuid
-  vendor         Vendor          @relation(fields: [vendorId], references: [id])
-  grossCents     Int
+  id              String           @id @default(uuid()) @db.Uuid
+  orderId         String           @db.Uuid
+  order           Order            @relation(fields: [orderId], references: [id])
+  vendorId        String           @db.Uuid
+  vendor          Vendor           @relation(fields: [vendorId], references: [id])
+  grossCents      Int
   commissionCents Int
-  netCents       Int
-  status         SettlementStatus @default(PENDING)
-  payoutId       String? @db.Uuid
-  payout         VendorPayout?   @relation(fields: [payoutId], references: [id])
-  createdAt      DateTime        @default(now())
+  netCents        Int
+  status          SettlementStatus @default(PENDING)
+  payoutId        String?          @db.Uuid
+  payout          VendorPayout?    @relation(fields: [payoutId], references: [id])
+  createdAt       DateTime         @default(now())
 
   @@index([orderId])
   @@index([vendorId])
@@ -384,16 +391,16 @@ model VendorSettlement {
 }
 
 model VendorPayout {
-  id          String     @id @default(uuid()) @db.Uuid
-  vendorId    String @db.Uuid
-  vendor      Vendor     @relation(fields: [vendorId], references: [id])
+  id          String    @id @default(uuid()) @db.Uuid
+  vendorId    String    @db.Uuid
+  vendor      Vendor    @relation(fields: [vendorId], references: [id])
   amountCents Int
-  currency    String     @default("USD")
-  status      String     @default("PENDING")
+  currency    String    @default("USD")
+  status      String    @default("PENDING")
   scheduledAt DateTime?
   paidAt      DateTime?
   transferRef String?
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime  @default(now())
 
   settlements VendorSettlement[]
 
@@ -403,7 +410,7 @@ model VendorPayout {
 
 model AuditLog {
   id        String   @id @default(uuid()) @db.Uuid
-  actorId   String? @db.Uuid
+  actorId   String?  @db.Uuid
   actor     User?    @relation(fields: [actorId], references: [id])
   action    String
   target    String?
@@ -411,9 +418,57 @@ model AuditLog {
   ip        String?
   userAgent String?
   category  String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([actorId])
   @@index([action])
   @@index([target])
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid()) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String   @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
