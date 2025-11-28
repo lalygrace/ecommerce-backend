@@ -2,8 +2,8 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    // "rootDir": "./src",
-    // "outDir": "./dist",
+    "rootDir": "./src",
+    "outDir": "./dist",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
@@ -11,8 +11,9 @@
     "target": "esnext",
     "types": ["node"],
     "moduleResolution": "nodenext",
-    "emitDeclarationOnly": true,
-    "allowImportingTsExtensions": true,
+    // Application build should emit JS, not only declarations
+    "emitDeclarationOnly": false,
+    
 
     // For nodejs:
     // "lib": ["esnext"],
@@ -21,8 +22,8 @@
 
     // Other Outputs
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
@@ -38,11 +39,15 @@
 
     // Recommended Options
     "strict": true,
-    "jsx": "react-jsx",
+    // No JSX in backend server
+    
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   }
+  ,
+  "include": ["src"],
+  "exclude": ["dist"]
 }
