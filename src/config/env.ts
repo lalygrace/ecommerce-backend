@@ -23,6 +23,8 @@ const EnvSchema = z.object({
   MONGO_URI: z.string().min(1, 'MONGO_URI (or DATABASE_URL) is required'),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 });
 
 const parsed = EnvSchema.safeParse(rawEnv);

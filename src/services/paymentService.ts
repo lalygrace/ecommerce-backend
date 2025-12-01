@@ -3,14 +3,49 @@ import * as orderRepo from '../repositories/orderRepository.js';
 import * as reservationRepo from '../repositories/reservationRepository.js';
 import * as reservationSvc from './reservationService.js';
 import * as inventorySvc from './inventoryService.js';
+import { stripe, isStripeConfigured } from './stripeService.js';
+import { env } from '../config/env.js';
 import type {
   CreatePaymentDtoType,
   UpdatePaymentDtoType,
   WebhookPaymentDtoType,
 } from '../dtos/payment.dto.js';
 
-export const createPayment = async (data: CreatePaymentDtoType) =>
-  repo.createPayment(data);
+export const createPayment = async (data: CreatePaymentDtoType) => {
+  // If card payment and Stripe configured, create a PaymentIntent and persist
+  if (data.method === 'CARD' && (data.gateway === 'stripe' || !data.gateway)) {
+    if (!isStripeConfigured()) {
+      // Fallback: persist payment record but do not call Stripe
+      return repo.createPayment({
+        ...data,
+        gateway: data.gateway ?? null,
+      } as any);
+    }
+
+    const currency = (data.currency ?? 'USD').toLowerCase();
+    // create PaymentIntent
+    const intent = await stripe.paymentIntents.create({
+      amount: data.amountCents,
+      currency,
+      metadata: { orderId: data.orderId },
+      // automatic payment methods enables card and others supported
+      automatic_payment_methods: { enabled: true },
+    } as any);
+
+    // Persist payment record referencing Stripe intent
+    const rec = await repo.createPayment({
+      ...data,
+      gateway: 'stripe',
+      transactionRef: intent.id,
+    } as any);
+
+    // Return client secret so frontend can confirm the payment
+    return { payment: rec, clientSecret: intent.client_secret };
+  }
+
+  // Default: persist payment record
+  return repo.createPayment(data);
+};
 
 export const getPaymentById = async (id: string) => repo.findPaymentById(id);
 
@@ -92,4 +127,50 @@ export const handleWebhook = async (payload: WebhookPaymentDtoType) => {
   }
 
   return updated;
+};
+
+export const handleStripeWebhook = async (
+  rawBody: Buffer,
+  sigHeader: string | string[] | undefined,
+) => {
+  if (!isStripeConfigured()) throw new Error('Stripe not configured');
+  if (!sigHeader || Array.isArray(sigHeader))
+    throw new Error('Missing stripe signature header');
+  const secret = env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) throw new Error('Missing STRIPE_WEBHOOK_SECRET');
+
+  let event: any;
+  try {
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      sigHeader as string,
+      secret,
+    );
+  } catch (err: any) {
+    throw new Error(`Invalid Stripe webhook signature: ${err.message}`);
+  }
+
+  // Handle payment_intent.succeeded and payment_intent.payment_failed
+  if (
+    event.type === 'payment_intent.succeeded' ||
+    event.type === 'payment_intent.payment_failed'
+  ) {
+    const intent = event.data.object as any;
+    const orderId = intent.metadata?.orderId as string | undefined;
+    const status =
+      event.type === 'payment_intent.succeeded' ? 'PAID' : 'FAILED';
+
+    const payload: WebhookPaymentDtoType = {
+      orderId: orderId as any,
+      transactionRef: intent.id,
+      status: status as any,
+      gateway: 'stripe',
+      amountCents: intent.amount ?? 0,
+    } as any;
+
+    return handleWebhook(payload);
+  }
+
+  // Unhandled events return null
+  return null;
 };
