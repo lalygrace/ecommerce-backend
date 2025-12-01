@@ -31,13 +31,11 @@ export const listUsers: RequestHandler = async (req, res, next) => {
     const limit = Number(q.limit ?? 20);
     const role = q.role;
     const result = await userService.listUsers({ page, limit, role, q: q.q });
-    return res
-      .status(200)
-      .json({
-        status: 'success',
-        data: result.items,
-        meta: { total: result.total, page, limit },
-      });
+    return res.status(200).json({
+      status: 'success',
+      data: result.items,
+      meta: { total: result.total, page, limit },
+    });
   } catch (err) {
     return next(err);
   }

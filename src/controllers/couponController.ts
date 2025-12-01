@@ -20,13 +20,11 @@ export const listCoupons: RequestHandler = async (req, res, next) => {
       limit: Number(limit),
       active,
     });
-    return res
-      .status(200)
-      .json({
-        status: 'success',
-        data: result.items,
-        meta: { total: result.total },
-      });
+    return res.status(200).json({
+      status: 'success',
+      data: result.items,
+      meta: { total: result.total },
+    });
   } catch (err) {
     return next(err);
   }

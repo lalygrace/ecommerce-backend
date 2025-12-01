@@ -1,5 +1,8 @@
 import * as repo from '../repositories/paymentRepository.js';
 import * as orderRepo from '../repositories/orderRepository.js';
+import * as reservationRepo from '../repositories/reservationRepository.js';
+import * as reservationSvc from './reservationService.js';
+import * as inventorySvc from './inventoryService.js';
 import type {
   CreatePaymentDtoType,
   UpdatePaymentDtoType,
@@ -43,6 +46,49 @@ export const handleWebhook = async (payload: WebhookPaymentDtoType) => {
     await orderRepo.updateOrder(payment.orderId, {
       status: 'PROCESSING',
     } as any);
+
+    // consume reservations for this order's items where possible
+    try {
+      const ord = await orderRepo.findOrderById(payment.orderId);
+      if (ord && ord.items && ord.items.length) {
+        for (const it of ord.items) {
+          // try to find reservation by user then session
+          const byUser =
+            await reservationRepo.findActiveReservationForProductAndUser(
+              it.productId,
+              ord.customerId,
+            );
+          if (byUser) {
+            await reservationSvc.consumeReservation(byUser.id);
+            continue;
+          }
+          const bySession =
+            await reservationRepo.findActiveReservationForProductAndSession(
+              it.productId,
+              undefined,
+            );
+          if (bySession) {
+            await reservationSvc.consumeReservation(bySession.id);
+            continue;
+          }
+
+          // if no reservation, create an explicit SALE inventory event
+          await inventorySvc.createInventoryEvent({
+            productId: it.productId,
+            variantSku: it.variantSku ?? undefined,
+            type: 'SALE',
+            quantity: it.quantity,
+            note: `Auto-sale for order ${payment.orderId}`,
+          } as any);
+        }
+      }
+    } catch (err) {
+      console.warn(
+        'Failed to consume reservations for order',
+        payment.orderId,
+        err,
+      );
+    }
   }
 
   return updated;

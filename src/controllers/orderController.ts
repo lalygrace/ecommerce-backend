@@ -49,13 +49,11 @@ export const listOrders: RequestHandler = async (req, res, next) => {
       customerId,
       status,
     });
-    return res
-      .status(200)
-      .json({
-        status: 'success',
-        data: result.items,
-        meta: { total: result.total, page, limit },
-      });
+    return res.status(200).json({
+      status: 'success',
+      data: result.items,
+      meta: { total: result.total, page, limit },
+    });
   } catch (err) {
     return next(err);
   }

@@ -22,13 +22,11 @@ export const listCategories: RequestHandler = async (req, res, next) => {
       q: q.q,
       parentId: q.parentId,
     });
-    return res
-      .status(200)
-      .json({
-        status: 'success',
-        data: result.items,
-        meta: { total: result.total, page, limit },
-      });
+    return res.status(200).json({
+      status: 'success',
+      data: result.items,
+      meta: { total: result.total, page, limit },
+    });
   } catch (err) {
     return next(err);
   }

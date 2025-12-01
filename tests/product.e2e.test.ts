@@ -23,7 +23,7 @@ describe('Products E2E', () => {
       data: {
         userId: user.id,
         displayName: 'Seller Test',
-        slug: `seller-${Date.now()}`,
+        slug: `seller-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       },
     });
 
@@ -32,7 +32,7 @@ describe('Products E2E', () => {
       data: {
         sellerId: seller.id,
         name: 'Test Vendor',
-        slug: `vendor-${Date.now()}`,
+        slug: `vendor-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       },
     });
 
@@ -45,11 +45,15 @@ describe('Products E2E', () => {
   afterEach(async () => {
     // remove created records in reverse order
     if (user) {
-      // delete products by vendor
-      await prisma.product.deleteMany({ where: { vendorId: vendor?.id } });
-      await prisma.vendor.deleteMany({ where: { id: vendor?.id } });
-      await prisma.sellerProfile.deleteMany({ where: { id: seller?.id } });
-      await prisma.user.deleteMany({ where: { id: user?.id } });
+      // delete products by vendor (only if vendor was created)
+      if (vendor && vendor.id) {
+        await prisma.product.deleteMany({ where: { vendorId: vendor.id } });
+        await prisma.vendor.deleteMany({ where: { id: vendor.id } });
+      }
+      if (seller && seller.id) {
+        await prisma.sellerProfile.deleteMany({ where: { id: seller.id } });
+      }
+      await prisma.user.deleteMany({ where: { id: user.id } });
     }
     vi.restoreAllMocks();
   });
