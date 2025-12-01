@@ -41,7 +41,33 @@
           "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "signin"]
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Try to extract a bearer token from common response shapes and save as environment variable 'token'",
+              "const body = pm.response.json();",
+              "let token = undefined;",
+              "if (body.token) token = body.token;",
+              "if (!token && body.accessToken) token = body.accessToken;",
+              "if (!token && body.data && (body.data.token || body.data.accessToken)) token = body.data.token || body.data.accessToken;",
+              "if (!token && body.data && body.data.session && body.data.session.accessToken) token = body.data.session.accessToken;",
+              "if (!token && body.data && body.data.session && body.data.session.token) token = body.data.session.token;",
+              "if (!token) {",
+              "  // As a fallback, if Better Auth returned cookies, you may extract them manually",
+              "  console.warn('Token not found in response body');",
+              "} else {",
+              "  pm.environment.set('token', token);",
+              "  console.log('Saved token to environment variable token');",
+              "}",
+              "pm.test('Signin returned 200-201', function () { pm.response.to.have.status.between(200,201); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
     },
     {
       "name": "Me - Get Session",
