@@ -232,6 +232,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StandardResponse'
+  /api/auth/sign-in/email:
+    post:
+      summary: Sign in with email (Better Auth email strategy)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthSignIn'
+      responses:
+        '200':
+          description: Signed in (returns token or session info)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
   /api/v1/coupons/validate:
     post:
       summary: Validate/apply coupon
@@ -298,6 +314,12 @@ components:
         role:
           type: string
           enum: [ADMIN, SELLER, CUSTOMER]
+    AuthSignIn:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
     CreateProduct:
       type: object
       required: [vendorId, title, priceCents]

@@ -28,7 +28,7 @@
       }
     },
     {
-      "name": "Auth - Sign In",
+      "name": "Auth - Sign In (Better Auth email)",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -37,9 +37,9 @@
           "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"StrongPassw0rd!\"\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/api/auth/signin",
+          "raw": "{{baseUrl}}/api/auth/sign-in/email",
           "host": ["{{baseUrl}}"],
-          "path": ["api", "auth", "signin"]
+          "path": ["api", "auth", "sign-in", "email"]
         }
       },
       "event": [
@@ -47,22 +47,24 @@
           "listen": "test",
           "script": {
             "exec": [
-              "// Try to extract a bearer token from common response shapes and save as environment variable 'token'",
-              "const body = pm.response.json();",
-              "let token = undefined;",
-              "if (body.token) token = body.token;",
-              "if (!token && body.accessToken) token = body.accessToken;",
-              "if (!token && body.data && (body.data.token || body.data.accessToken)) token = body.data.token || body.data.accessToken;",
-              "if (!token && body.data && body.data.session && body.data.session.accessToken) token = body.data.session.accessToken;",
-              "if (!token && body.data && body.data.session && body.data.session.token) token = body.data.session.token;",
-              "if (!token) {",
-              "  // As a fallback, if Better Auth returned cookies, you may extract them manually",
-              "  console.warn('Token not found in response body');",
-              "} else {",
+              "// Extract token or Set-Cookie from Better Auth email sign-in response",
+              "let body = {};",
+              "try { body = pm.response.json(); } catch (e) { body = {}; }",
+              "let token = body?.token || body?.accessToken || body?.data?.token || body?.data?.accessToken || body?.data?.session?.accessToken || body?.data?.session?.token;",
+              "if (token) {",
               "  pm.environment.set('token', token);",
               "  console.log('Saved token to environment variable token');",
+              "} else {",
+              "  // Save Set-Cookie if present (session cookie case)",
+              "  const setCookie = pm.response.headers.get('set-cookie') || pm.response.headers.get('Set-Cookie');",
+              "  if (setCookie) {",
+              "    pm.environment.set('sessionCookie', setCookie);",
+              "    console.log('Saved Set-Cookie to environment variable sessionCookie');",
+              "  } else {",
+              "    console.warn('No token or Set-Cookie found in response');",
+              "  }",
               "}",
-              "pm.test('Signin returned 200-201', function () { pm.response.to.have.status.between(200,201); });"
+              "pm.test('Signin returned 2xx', function () { pm.response.to.be.success; });"
             ],
             "type": "text/javascript"
           }

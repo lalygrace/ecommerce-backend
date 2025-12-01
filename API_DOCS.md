@@ -50,7 +50,22 @@ Users (`/api/v1/users`)
 
 Auth (`/api/auth/*`)
 
-- The Better Auth handler is mounted at `/api/auth/*` (see `src/app.ts`). Use those endpoints to register/log in and obtain tokens. Endpoints and payloads are provided by Better Auth — consult Better Auth docs if you need exact route names for your installed configuration.
+- The Better Auth handler is mounted at `/api/auth/*` (see `src/app.ts`). Use those endpoints to register/log in and obtain tokens. Endpoints and payloads are provided by Better Auth.
+
+Canonical Better Auth endpoints (observed in this dev instance)
+
+- POST `/api/auth/sign-in/email` — Sign in with email/password (Better Auth email strategy).
+  - Body: `{ "email": "...", "password": "..." }`
+  - Example:
+    ```bash
+    curl -i -X POST http://localhost:3000/api/auth/sign-in/email \
+      -H "Content-Type: application/json" \
+      -d '{"email":"john@example.com","password":"StrongPassw0rd!"}'
+    ```
+  - Response: Better Auth may return a JSON body containing a token (e.g. `token`, `accessToken`, or a `data.session.accessToken`) or it may set a session cookie in `Set-Cookie`. Use whichever your instance returns.
+  - In Postman: import the `postman_collection.json` included in the repo. The Sign In request is configured to capture either a `token` (saved to `{{token}}`) or a `sessionCookie` (saved to `{{sessionCookie}}`).
+
+- Note: Some Better Auth installations expose alternate paths (e.g. `/api/auth/email/signin`, `/api/auth/signin`) — if one path returns `404`, try the `/api/auth/sign-in/email` variant which is the confirmed working path for this workspace.
 
 Me (`/api/v1/me`)
 
