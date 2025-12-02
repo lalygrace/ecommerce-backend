@@ -17,6 +17,7 @@ export const auth = betterAuth({
     enabled: true,
     // example of disabling auto sign-in if desired: autoSignIn: false,
   },
+  trustedOrigins: ['http://localhost:3000'],
   socialProviders:
     googleClientId && googleClientSecret
       ? {
