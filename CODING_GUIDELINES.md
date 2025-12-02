@@ -134,10 +134,3 @@ When To Create New Files
 
 - Create a new file when a responsibility is distinct, reused in multiple places, or would make a file >200 lines.
 - Prefer a single file for small, closely related helpers used only by one module.
-
-Next Steps (recommended)
-
-- Run a repo scan to list places that violate these guidelines (controllers with logic, missing DTOs, large files).
-- Add recommended tooling configs (`.eslintrc`, `.prettierrc`, `lint-staged`, `husky`) if you want enforcement.
-
-If you'd like, I can now scan the repository and produce a prioritized refactor list.
