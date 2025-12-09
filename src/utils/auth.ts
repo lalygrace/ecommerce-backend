@@ -3,7 +3,10 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { jwt, bearer, oAuthProxy, emailOTP } from 'better-auth/plugins';
 import { sendEmail } from './email.js';
-import { buildVerificationEmail } from './emailTemplates.js';
+import {
+  buildVerificationEmail,
+  buildPasswordResetEmail,
+} from './emailTemplates.js';
 // Social provider config (google) added strictly per provided docs
 // If your Prisma file is located elsewhere, you can change the path
 
@@ -32,6 +35,28 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
     requireEmailVerification: true,
+    async sendResetPassword({ user, url, token }: any) {
+      try {
+        const { subject, html, text } = buildPasswordResetEmail({
+          appName: process.env.APP_NAME || 'Ecommerce',
+          resetUrl: url,
+          supportEmail: process.env.SUPPORT_EMAIL ?? '',
+        });
+        await sendEmail({ to: user.email, subject, html, text });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[passwordReset] sendResetPassword error',
+          e,
+          token ? '(token available)' : '',
+        );
+        throw e;
+      }
+    },
+    async onPasswordReset({ user }: any) {
+      // eslint-disable-next-line no-console
+      console.log('Password reset completed for', user?.email || user?.id);
+    },
   } as any,
   // Support both link-based verification and OTP via plugin
   emailVerification: {
@@ -61,6 +86,7 @@ export const auth = betterAuth({
       console.log('Email verified for user', user?.id || user?.email);
     },
   },
+  // Removed legacy passwordReset config; handled in emailAndPassword.sendResetPassword
   trustedOrigins: ['http://localhost:3000'],
   socialProviders:
     googleClientId && googleClientSecret

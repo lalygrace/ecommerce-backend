@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../db/prisma.js';
 import { requireAdmin } from '../middlewares/requireAdmin.js';
+import { auth } from '../utils/auth.js';
 import { UserRole } from '@prisma/client';
 
 const router = Router();
@@ -61,3 +62,22 @@ router.post('/users/:id/role', requireAdmin, async (req, res, next) => {
 });
 
 export default router;
+
+// Set password for the currently authenticated admin (server-side only per Better Auth docs)
+router.post('/self/set-password', requireAdmin, async (req, res, next) => {
+  try {
+    const { password } = req.body as { password?: string };
+    if (!password || typeof password !== 'string' || password.length < 8) {
+      return res
+        .status(400)
+        .json({ error: 'Password must be at least 8 characters' });
+    }
+    await auth.api.setPassword({
+      body: { newPassword: password },
+      headers: req.headers as any,
+    });
+    return res.json({ status: 'success' });
+  } catch (err) {
+    next(err);
+  }
+});

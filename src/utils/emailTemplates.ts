@@ -105,3 +105,64 @@ export function buildOtpEmail({
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${subject}</title><style>body{margin:0;padding:0;background:#f6f7f9;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica Neue,Arial} .container{max-width:560px;margin:0 auto;padding:24px} .card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:32px} .brand{font-weight:700;font-size:20px;color:#111827} .title{font-size:18px;font-weight:600;color:#111827;margin:20px 0 4px} .muted{color:#6b7280;line-height:1.55} .otp{font-size:32px;letter-spacing:4px;font-weight:700;background:#111827;color:#fff;padding:12px 16px;border-radius:10px;display:inline-block;margin:16px 0} .footer{margin-top:24px;font-size:12px;color:#6b7280} .warn{color:#dc2626;font-size:12px;margin-top:8px}</style></head><body><div class="container"><div class="card"><div class="brand">${appName}</div><div class="title">${meta.title}</div><p class="muted">${meta.lead}</p><div class="otp" aria-label="One time passcode">${otp}</div><p class="muted">This code expires in <strong>${minutes} minute${minutes === 1 ? '' : 's'}</strong>. Do not share it with anyone.</p><p class="warn">If you did not request this code you can ignore this email.</p><div class="footer">${supportEmail ? `<p>Need help? Contact us at ${supportEmail}</p>` : ''}</div></div></div></body></html>`;
   return { subject, text, html };
 }
+
+type PasswordResetEmailParams = {
+  appName: string;
+  resetUrl: string;
+  supportEmail?: string;
+};
+
+export function buildPasswordResetEmail({
+  appName,
+  resetUrl,
+  supportEmail,
+}: PasswordResetEmailParams) {
+  const subject = `${appName} • Reset your password`;
+  const text = `You requested a password reset for your ${appName} account.
+
+To proceed, open the link below:
+${resetUrl}
+
+If you did not request this, you can ignore this email.
+${supportEmail ? `\nNeed help? Contact us: ${supportEmail}` : ''}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${subject}</title>
+    <style>
+      body { margin:0; padding:0; background:#f6f7f9; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial; }
+      .container { max-width:560px; margin:0 auto; padding:24px; }
+      .card { background:#ffffff; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06); padding:32px; }
+      .brand { font-weight:700; font-size:20px; color:#111827; }
+      .title { font-size:18px; font-weight:600; color:#111827; margin:20px 0 8px; }
+      .muted { color:#6b7280; line-height:1.6; }
+      .button { display:inline-block; margin:24px 0; background:#111827; color:#ffffff !important; text-decoration:none; padding:12px 18px; border-radius:10px; font-weight:600; }
+      .link { word-break:break-all; color:#2563eb; text-decoration:underline; }
+      .footer { margin-top:24px; font-size:12px; color:#6b7280; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="brand">${appName}</div>
+        <div class="title">Reset your password</div>
+        <p class="muted">We received a request to reset your password. If this was you, click the button below to proceed.</p>
+        <p>
+          <a class="button" href="${resetUrl}" target="_blank" rel="noopener noreferrer">Reset password</a>
+        </p>
+        <p class="muted">If the button doesn’t work, copy and paste this link into your browser:</p>
+        <p><a class="link" href="${resetUrl}" target="_blank" rel="noopener noreferrer">${resetUrl}</a></p>
+        <div class="footer">
+          <p>If you didn’t request this, you can safely ignore this email.</p>
+          ${supportEmail ? `<p>Need help? Contact us at ${supportEmail}</p>` : ''}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>`;
+
+  return { subject, text, html };
+}
