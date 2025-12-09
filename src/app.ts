@@ -17,6 +17,7 @@ import couponRoutes from './routes/couponRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import inventoryRoutes from './routes/inventoryRoutes.js';
 import reservationRoutes from './routes/reservationRoutes.js';
+import adminUserRoutes from './routes/adminUserRoutes.js';
 import { requestContext } from './middlewares/requestContext.js';
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/inventory', inventoryRoutes);
 app.use('/api/v1/reservations', reservationRoutes);
+app.use('/api/v1/admin', adminUserRoutes);
 
 // Test route to demonstrate error handling
 app.get('/error', (_req: Request, _res: Response, next: NextFunction) => {

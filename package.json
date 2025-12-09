@@ -5,6 +5,7 @@
     "start": "node dist/server.js",
     "dev": "pnpm dlx tsx watch src/server.ts",
     "test": "vitest run",
+    "seed:admin": "pnpm dlx tsx scripts/seedAdmin.ts",
     "lint": "eslint 'src/**/*.ts'"
   },
   "devDependencies": {
