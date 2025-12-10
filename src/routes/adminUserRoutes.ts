@@ -6,9 +6,10 @@ import { UserRole } from '@prisma/client';
 
 const router = Router();
 
+// Promote/demote user role. Only ADMINs can call this.
 router.post('/users/:id/role', requireAdmin, async (req, res, next) => {
   try {
-    const actorId = (req as any).session?.user?.id;
+    const actorId = (res.locals.session as any)?.user?.id;
     const ip = req.ip;
     const targetUserId = req.params.id;
     const { newRole, reason } = req.body as {
@@ -61,8 +62,6 @@ router.post('/users/:id/role', requireAdmin, async (req, res, next) => {
   }
 });
 
-export default router;
-
 // Set password for the currently authenticated admin (server-side only per Better Auth docs)
 router.post('/self/set-password', requireAdmin, async (req, res, next) => {
   try {
@@ -81,3 +80,5 @@ router.post('/self/set-password', requireAdmin, async (req, res, next) => {
     next(err);
   }
 });
+
+export default router;

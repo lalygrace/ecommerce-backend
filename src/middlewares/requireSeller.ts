@@ -10,9 +10,18 @@ import { AppError } from '../errors/AppError.js';
 // vendor records to `res.locals` for downstream handlers.
 export const requireSeller: RequestHandler = async (req, res, next) => {
   try {
-    const session = await auth.api.getSession({
+    let session = await auth.api.getSession({
       headers: fromNodeHeaders(req.headers),
     });
+    // enrich role if missing
+    try {
+      const { enrichSessionWithRole } =
+        await import('../utils/sessionEnricher.js');
+      session = await enrichSessionWithRole(session);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[requireSeller] failed to enrich session role', e);
+    }
     if (!session || !session.user || !session.user.id) {
       return next(new AppError('Unauthenticated', 401, true));
     }
